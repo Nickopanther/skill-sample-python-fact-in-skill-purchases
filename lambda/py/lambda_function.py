@@ -698,6 +698,28 @@ class UpsellResponseHandler(AbstractRequestHandler):
                 reprompt = get_random_yes_no_question()
                 return handler_input.response_builder.speak(speech).ask(
                     reprompt).response
+            
+            # The info in the else statement may be correct. This was
+            # taken from the BuyResponseHandler class. What was missing
+            # from the UpsellResponseHandler class was an else statement
+            # for if someone accepted the Upsell purchase. Otherwise, 
+            # without it, it would've caused an error.
+            # Extra code here by Nickopanther (not from the Amazon Alexa team)
+            else handler_input.request_envelope.request.payload.get(
+                    "purchaseResult") == PurchaseResult.ACCEPTED.value:
+                category_facts = [l for l in all_facts if
+                                          l.get("type") ==
+                                          product[0].reference_name.replace(
+                                              "_pack", "")]
+                    speech = ("You have unlocked the {}.  Here is your {} "
+                              "fact: {}  {}").format(
+                        product[0].name,
+                        product[0].reference_name.replace(
+                            "_pack", "").replace("all_access", ""),
+                        get_random_from_list(category_facts),
+                        get_random_yes_no_question())
+                    reprompt = get_random_yes_no_question()
+            
         else:
             logger.log("Connections.Response indicated failure. "
                        "Error: {}".format(
